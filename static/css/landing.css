@@ -1,0 +1,201 @@
+:root {
+    --hero-accent: #3fa66c;
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero (redesign)                                                      */
+/* ------------------------------------------------------------------ */
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 5rem 2rem 6rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    gap: 0;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-light);
+    color: var(--hero-accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+    padding: 0.55rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(63, 166, 108, 0.25);
+    margin-bottom: 1.75rem;
+}
+
+.hero-badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--hero-accent);
+    flex-shrink: 0;
+}
+
+.hero-title {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: clamp(2.5rem, 6vw, 4.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+}
+
+.hero-title-accent {
+    display: block;
+    color: var(--hero-accent);
+}
+
+.hero-subtitle {
+    font-size: 1.15rem;
+    color: var(--ink-muted);
+    line-height: 1.65;
+    max-width: 620px;
+    margin: 0 auto 2.5rem;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4rem;
+}
+
+.hero-actions .btn-primary {
+    padding: 0.9rem 1.75rem;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ */
+/* Mock card (hero visual)                                             */
+/* ------------------------------------------------------------------ */
+
+.hero-visual {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.mock-card {
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 950px;
+}
+
+.mock-dots {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+}
+
+.mock-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+
+.mock-dot-red { background: #f2a3a0; }
+.mock-dot-yellow { background: #f3c988; }
+.mock-dot-green { background: #a8dcc0; }
+
+.mock-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.mock-stat {
+    background: var(--paper-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+}
+
+.mock-stat-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+}
+
+.mock-stat-value {
+    display: block;
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+}
+
+.mock-stat-change {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.mock-stat-change-neg { color: var(--danger); }
+.mock-stat-change-pos { color: var(--hero-accent); }
+.mock-stat-change-muted { color: var(--ink-faint); }
+
+.mock-bars-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: left;
+}
+
+.mock-bar-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mock-cat {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+}
+
+.mock-bar-track {
+    height: 10px;
+    background: var(--border-soft);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.mock-bar {
+    height: 100%;
+    border-radius: 999px;
+}
+
+.mock-bar-food { background: var(--accent-2); }
+.mock-bar-travel { background: #4f7edb; }
+.mock-bar-bills { background: #7c6ce0; }
+
+@media (max-width: 720px) {
+    .mock-stats {
+        grid-template-columns: 1fr;
+    }
+}
