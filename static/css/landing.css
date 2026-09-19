@@ -199,3 +199,71 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ------------------------------------------------------------------ */
+/* "See how it works" video modal                                      */
+/* ------------------------------------------------------------------ */
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 15, 15, 0.75);
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    z-index: 1000;
+}
+
+.modal-overlay.is-open {
+    display: flex;
+}
+
+.modal {
+    position: relative;
+    width: 100%;
+    max-width: 860px;
+    background: var(--ink);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.modal-close {
+    position: absolute;
+    top: -2.75rem;
+    right: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 50%;
+    background: var(--paper-card);
+    color: var(--ink);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: var(--accent-light);
+}
+
+.modal-video-wrap {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+}
+
+.modal-video-wrap iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
