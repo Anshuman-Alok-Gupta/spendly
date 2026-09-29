@@ -2,7 +2,7 @@ import os
 import sqlite3
 from datetime import date
 
-from werkzeug.security import generate_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "expense_tracker.db")
@@ -120,5 +120,23 @@ def create_user(name, email, password):
     except sqlite3.IntegrityError:
         conn.rollback()
         return None
+    finally:
+        conn.close()
+
+
+def authenticate_user(email, password):
+    """Return the user row if the email and password match, otherwise None.
+
+    `email` is expected to be already trimmed and lowercased by the caller.
+    """
+    conn = get_db()
+    try:
+        row = conn.execute(
+            "SELECT id, name, email, password_hash FROM users WHERE email = ?",
+            (email,),
+        ).fetchone()
+        if row is None or not check_password_hash(row["password_hash"], password):
+            return None
+        return row
     finally:
         conn.close()

@@ -1,8 +1,10 @@
 import os
 
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import (
+    Flask, flash, redirect, render_template, request, session, url_for
+)
 
-from database.db import create_user, init_db, seed_db
+from database.db import authenticate_user, create_user, init_db, seed_db
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
@@ -66,9 +68,33 @@ def register():
     return redirect(url_for("login"))
 
 
-@app.route("/login")
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    if request.method == "GET":
+        if session.get("user_id"):
+            return redirect(url_for("landing"))
+        return render_template("login.html")
+
+    email = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
+
+    user = authenticate_user(email, password) if email and password else None
+    if user is None:
+        return render_template(
+            "login.html", error="Invalid email or password.", email=email
+        ), 401
+
+    session.clear()
+    session["user_id"] = user["id"]
+    session["user_name"] = user["name"]
+    return redirect(url_for("landing"))
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("You've been signed out.", "success")
+    return redirect(url_for("login"))
 
 
 @app.route("/terms")
@@ -84,11 +110,6 @@ def privacy():
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-@app.route("/logout")
-def logout():
-    return "Logout — coming in Step 3"
-
 
 @app.route("/profile")
 def profile():
