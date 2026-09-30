@@ -18,7 +18,8 @@ spendly/
 ├── static/
 │   ├── css/
 │   │   ├── style.css       # Global styles
-│   │   └── landing.css     # Landing-page-only styles
+│   │   ├── landing.css     # Landing-page-only styles
+│   │   └── profile.css     # Profile-page-only styles
 │   └── js/
 │       └── main.js         # Vanilla JS only
 └── requirements.txt
@@ -47,6 +48,7 @@ spendly/
 - **Flask only** — no FastAPI, no Django, no other web frameworks
 - **SQLite only** — no PostgreSQL, no SQLAlchemy ORM, no external DB
 - **Vanilla JS only** — no React, no jQuery, no npm packages
+- **Icons:** Lucide via pinned CDN script in `base.html`, initialised in `main.js` (not an npm package)
 - **No new pip packages** — work within `requirements.txt` as-is unless explicitly told otherwise
 - Python 3.10+ assumed — f-strings and `match` statements are fine
 
@@ -98,7 +100,7 @@ pytest -s
 | `GET /login` | Implemented — renders `login.html`; redirects to `/` if already signed in |
 | `POST /login` | Implemented — `authenticate_user()`, sets `session["user_id"]`/`session["user_name"]`, redirects to `/`; 401 + generic error on failure |
 | `GET /logout` | Implemented — clears session, flashes "You've been signed out.", redirects to `/login` |
-| `GET /profile` | Stub — Step 4 |
+| `GET /profile` | Implemented — renders `profile.html` with placeholder data; redirects to `/login` if signed out |
 | `GET /expenses/add` | Stub — Step 7 |
 | `GET /expenses/<id>/edit` | Stub — Step 8 |
 | `GET /expenses/<id>/delete` | Stub — Step 9 |

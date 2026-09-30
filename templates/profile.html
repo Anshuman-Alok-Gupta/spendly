@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+{% macro inr(value) %}₹{{ "%.2f"|format(value) }}{% endmacro %}
+{% set name_parts = (user.name or "").split() %}
+{% set initials = ((name_parts[0][0] ~ (name_parts[-1][0] if name_parts|length > 1 else "")) | upper) if name_parts else "?" %}
+
+<section class="profile">
+    <div class="profile-inner">
+
+        <header class="profile-card profile-user">
+            <div class="profile-avatar" aria-hidden="true">{{ initials }}</div>
+            <div class="profile-user-info">
+                <h1 class="profile-name">{{ user.name or "Your profile" }}</h1>
+                <p class="profile-meta">
+                    <i data-lucide="mail" aria-hidden="true"></i>
+                    <span>{{ user.email }}</span>
+                </p>
+                <p class="profile-meta">
+                    <i data-lucide="calendar" aria-hidden="true"></i>
+                    <span>Member since {{ user.member_since }}</span>
+                </p>
+            </div>
+            <a href="{{ url_for('add_expense') }}" class="btn-primary profile-add">
+                <i data-lucide="plus" aria-hidden="true"></i>
+                <span>Add expense</span>
+            </a>
+        </header>
+
+        <dl class="profile-stats" aria-label="Summary">
+            <div class="profile-card profile-stat">
+                <dt class="profile-stat-label">
+                    <i data-lucide="wallet" aria-hidden="true"></i>
+                    <span>Total spent</span>
+                </dt>
+                <dd class="profile-stat-value">{{ inr(stats.total_spent) }}</dd>
+            </div>
+            <div class="profile-card profile-stat">
+                <dt class="profile-stat-label">
+                    <i data-lucide="receipt" aria-hidden="true"></i>
+                    <span>Transactions</span>
+                </dt>
+                <dd class="profile-stat-value">{{ stats.transaction_count }}</dd>
+            </div>
+            <div class="profile-card profile-stat">
+                <dt class="profile-stat-label">
+                    <i data-lucide="tag" aria-hidden="true"></i>
+                    <span>Top category</span>
+                </dt>
+                <dd class="profile-stat-value">{{ stats.top_category or "—" }}</dd>
+            </div>
+        </dl>
+
+        <div class="profile-grid">
+
+            <section class="profile-card profile-panel" aria-labelledby="recent-heading">
+                <h2 id="recent-heading" class="profile-panel-title">
+                    <i data-lucide="clock" aria-hidden="true"></i>
+                    <span>Recent transactions</span>
+                </h2>
+                {% if transactions %}
+                <div class="profile-table-wrap" role="region" aria-labelledby="recent-heading" tabindex="0">
+                    <table class="profile-table">
+                        <caption class="profile-table-caption">
+                            Showing your {{ transactions|length }} most recent of {{ stats.transaction_count }} expenses
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Category</th>
+                                <th scope="col" class="profile-num">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transactions %}
+                            <tr>
+                                <td class="profile-date"><time datetime="{{ tx.date }}">{{ tx.date }}</time></td>
+                                <th scope="row" class="profile-desc">{{ tx.description }}</th>
+                                <td><span class="profile-pill">{{ tx.category }}</span></td>
+                                <td class="profile-num">{{ inr(tx.amount) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="profile-empty">
+                    <i data-lucide="inbox" aria-hidden="true"></i>
+                    <p class="profile-empty-title">No expenses yet.</p>
+                    <p class="profile-empty-body">Add your first expense to see it here.</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <section class="profile-card profile-panel" aria-labelledby="category-heading">
+                <h2 id="category-heading" class="profile-panel-title">
+                    <i data-lucide="chart-pie" aria-hidden="true"></i>
+                    <span>Spending by category</span>
+                </h2>
+                {% if categories %}
+                <ul class="profile-cats">
+                    {% for item in categories %}
+                    <li class="profile-cat">
+                        <div class="profile-cat-head">
+                            <span class="profile-cat-name">{{ item.name }}</span>
+                            <span class="profile-cat-figures">
+                                <span class="profile-cat-amount">{{ inr(item.amount) }}</span>
+                                <span class="profile-cat-percent">{{ item.percent }}%</span>
+                            </span>
+                        </div>
+                        <div class="profile-bar-track" aria-hidden="true">
+                            <div class="profile-bar" style="width: {{ item.percent }}%"></div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="profile-empty-body">No spending to break down yet.</p>
+                {% endif %}
+            </section>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

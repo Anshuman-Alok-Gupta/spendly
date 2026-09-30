@@ -1,0 +1,337 @@
+/* ------------------------------------------------------------------ */
+/* Profile page layout                                                 */
+/* ------------------------------------------------------------------ */
+
+.profile {
+    padding: 3rem 2rem 4rem;
+}
+
+.profile-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.profile-card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+}
+
+.profile .lucide {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* User card                                                           */
+/* ------------------------------------------------------------------ */
+
+.profile-user {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.profile-avatar {
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--paper);
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.profile-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 400;
+    line-height: 1.2;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    overflow-wrap: anywhere;
+}
+
+.profile-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+    overflow-wrap: anywhere;
+}
+
+.profile-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Summary stats                                                       */
+/* ------------------------------------------------------------------ */
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.profile-stat-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin-bottom: 0.5rem;
+}
+
+.profile-stat-label .lucide { color: var(--accent); }
+
+.profile-stat-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+/* ------------------------------------------------------------------ */
+/* Panels                                                              */
+/* ------------------------------------------------------------------ */
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.profile-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 1rem;
+}
+
+.profile-panel-title .lucide {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Recent transactions table                                           */
+/* ------------------------------------------------------------------ */
+
+.profile-table-wrap {
+    overflow-x: auto;
+}
+
+.profile-table-wrap:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.profile-table {
+    width: 100%;
+    min-width: 34rem;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.profile-table thead th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+    padding: 0 0.75rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.profile-table tbody th,
+.profile-table tbody td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.profile-table tbody tr:last-child th,
+.profile-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.profile-table tbody tr:hover { background: var(--paper); }
+
+.profile-table tbody th {
+    text-align: left;
+    font-weight: 400;
+    color: var(--ink);
+}
+
+.profile-table .profile-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.profile-table tbody .profile-num { font-weight: 500; }
+
+.profile-date {
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.profile-table-caption {
+    caption-side: bottom;
+    text-align: left;
+    padding-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+}
+
+.profile-pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--paper-warm);
+    border: 1px solid var(--border-soft);
+    color: var(--ink-soft);
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ */
+/* Spending by category                                                */
+/* ------------------------------------------------------------------ */
+
+.profile-cats {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.profile-cat-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+}
+
+.profile-cat-name { color: var(--ink-soft); }
+
+.profile-cat-figures {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.profile-cat-amount {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+.profile-cat-percent {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.profile-bar-track {
+    height: 8px;
+    background: var(--border-soft);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.profile-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 999px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Empty state                                                         */
+/* ------------------------------------------------------------------ */
+
+.profile-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--ink-muted);
+}
+
+.profile-empty .lucide {
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-empty-title {
+    font-weight: 500;
+    color: var(--ink-soft);
+}
+
+.profile-empty-body {
+    font-size: 0.9rem;
+    color: var(--ink-muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+    .profile-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 720px) {
+    .profile-stats { grid-template-columns: minmax(0, 1fr); }
+    .profile-user { flex-wrap: wrap; }
+    .profile-add { width: 100%; }
+}
+
+@media (max-width: 600px) {
+    .profile { padding: 2rem 1rem 3rem; }
+}
+
+@media (max-width: 480px) {
+    .profile-card { padding: 1.25rem; }
+
+    .profile-avatar {
+        width: 3.5rem;
+        height: 3.5rem;
+        font-size: 1.4rem;
+    }
+}
