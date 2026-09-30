@@ -37,6 +37,56 @@ def _validate_registration(name, email, password):
     return None
 
 
+def _placeholder_profile_context(user_name):
+    """Hardcoded profile data for the design step.
+
+    A later step replaces this one call with real queries; the returned
+    shape must stay the same so profile.html needs no changes.
+    """
+    category_totals = (
+        ("Bills", 5400.00),
+        ("Food", 3860.50),
+        ("Shopping", 2499.00),
+        ("Transport", 1240.00),
+        ("Entertainment", 899.00),
+        ("Health", 650.00),
+        ("Other", 300.00),
+    )
+    total = round(sum(amount for _, amount in category_totals), 2)
+    categories = [
+        {"name": name, "amount": amount, "percent": round(amount / total * 100)}
+        for name, amount in sorted(
+            category_totals, key=lambda pair: pair[1], reverse=True
+        )
+    ]
+    transactions = [
+        {"date": "2026-09-28", "description": "Electricity bill",
+         "category": "Bills", "amount": 1850.00},
+        {"date": "2026-09-26", "description": "Weekly groceries",
+         "category": "Food", "amount": 1240.50},
+        {"date": "2026-09-24", "description": "Metro card recharge",
+         "category": "Transport", "amount": 500.00},
+        {"date": "2026-09-21", "description": "Movie tickets",
+         "category": "Entertainment", "amount": 450.00},
+        {"date": "2026-09-19", "description": "Pharmacy",
+         "category": "Health", "amount": 320.00},
+    ]
+    return {
+        "user": {
+            "name": user_name,
+            "email": "you@example.com",
+            "member_since": "January 2026",
+        },
+        "stats": {
+            "total_spent": total,
+            "transaction_count": 24,
+            "top_category": categories[0]["name"],
+        },
+        "transactions": transactions,
+        "categories": categories,
+    }
+
+
 # ------------------------------------------------------------------ #
 # Routes                                                              #
 # ------------------------------------------------------------------ #
@@ -97,6 +147,16 @@ def logout():
     return redirect(url_for("login"))
 
 
+@app.route("/profile")
+def profile():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+    return render_template(
+        "profile.html",
+        **_placeholder_profile_context(session.get("user_name", "")),
+    )
+
+
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -110,11 +170,6 @@ def privacy():
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-@app.route("/profile")
-def profile():
-    return "Profile page — coming in Step 4"
-
 
 @app.route("/expenses/add")
 def add_expense():
