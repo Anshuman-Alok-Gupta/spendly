@@ -5,6 +5,10 @@ from flask import (
 )
 
 from database.db import authenticate_user, create_user, init_db, seed_db
+from database.queries import (
+    get_category_breakdown, get_recent_transactions, get_summary_stats,
+    get_user_by_id,
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-me")
@@ -35,56 +39,6 @@ def _validate_registration(name, email, password):
     if len(password) < 8:
         return "Password must be at least 8 characters."
     return None
-
-
-def _placeholder_profile_context(user_name):
-    """Hardcoded profile data for the design step.
-
-    A later step replaces this one call with real queries; the returned
-    shape must stay the same so profile.html needs no changes.
-    """
-    category_totals = (
-        ("Bills", 5400.00),
-        ("Food", 3860.50),
-        ("Shopping", 2499.00),
-        ("Transport", 1240.00),
-        ("Entertainment", 899.00),
-        ("Health", 650.00),
-        ("Other", 300.00),
-    )
-    total = round(sum(amount for _, amount in category_totals), 2)
-    categories = [
-        {"name": name, "amount": amount, "percent": round(amount / total * 100)}
-        for name, amount in sorted(
-            category_totals, key=lambda pair: pair[1], reverse=True
-        )
-    ]
-    transactions = [
-        {"date": "2026-09-28", "description": "Electricity bill",
-         "category": "Bills", "amount": 1850.00},
-        {"date": "2026-09-26", "description": "Weekly groceries",
-         "category": "Food", "amount": 1240.50},
-        {"date": "2026-09-24", "description": "Metro card recharge",
-         "category": "Transport", "amount": 500.00},
-        {"date": "2026-09-21", "description": "Movie tickets",
-         "category": "Entertainment", "amount": 450.00},
-        {"date": "2026-09-19", "description": "Pharmacy",
-         "category": "Health", "amount": 320.00},
-    ]
-    return {
-        "user": {
-            "name": user_name,
-            "email": "you@example.com",
-            "member_since": "January 2026",
-        },
-        "stats": {
-            "total_spent": total,
-            "transaction_count": 24,
-            "top_category": categories[0]["name"],
-        },
-        "transactions": transactions,
-        "categories": categories,
-    }
 
 
 # ------------------------------------------------------------------ #
@@ -149,11 +103,21 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    if not session.get("user_id"):
+    user_id = session.get("user_id")
+    if not user_id:
         return redirect(url_for("login"))
+
+    user = get_user_by_id(user_id)
+    if user is None:
+        session.clear()
+        return redirect(url_for("login"))
+
     return render_template(
         "profile.html",
-        **_placeholder_profile_context(session.get("user_name", "")),
+        user=user,
+        stats=get_summary_stats(user_id),
+        transactions=get_recent_transactions(user_id),
+        categories=get_category_breakdown(user_id),
     )
 
 

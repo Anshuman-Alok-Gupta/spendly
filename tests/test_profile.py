@@ -23,10 +23,9 @@ def _login(client, **overrides):
     return client.post("/login", data={**DEMO, **overrides})
 
 
-def _as(client, name="Demo User"):
+def _as(client, user_id=1):
     with client.session_transaction() as sess:
-        sess["user_id"] = 1
-        sess["user_name"] = name
+        sess["user_id"] = user_id
 
 
 def _raw(response):
@@ -41,8 +40,8 @@ def _path(response):
     return urlparse(response.headers["Location"]).path
 
 
-def _profile(client, name="Demo User"):
-    _as(client, name)
+def _profile(client, user_id=1):
+    _as(client, user_id)
     return _raw(client.get("/profile"))
 
 
@@ -98,8 +97,8 @@ def test_profile_shows_name_and_initials(client):
     "name,initials",
     [("Mary Jane Watson", "MW"), ("anshuman", "A"), ("", "?")],
 )
-def test_initials_derivation(client, name, initials):
-    body = _profile(client, name)
+def test_initials_derivation(client, make_user, name, initials):
+    body = _profile(client, make_user(name=name))
 
     assert re.search(
         rf'class="profile-avatar"[^>]*>\s*{re.escape(initials)}\s*<', body
@@ -113,8 +112,8 @@ def test_profile_shows_email_and_member_since(client):
     assert "Member since" in body
 
 
-def test_user_name_is_escaped(client):
-    body = _profile(client, "<script>x</script>")
+def test_user_name_is_escaped(client, make_user):
+    body = _profile(client, make_user(name="<script>x</script>"))
 
     assert "&lt;script&gt;x&lt;/script&gt;" in body
     assert "<script>x</script>" not in body
@@ -155,10 +154,10 @@ def test_transactions_table(client):
 
     for heading in ("Date", "Description", "Category", "Amount"):
         assert re.search(rf'<th scope="col"[^>]*>\s*{heading}\s*</th>', body)
-    assert len(re.findall(r"<tr>", tbody)) == 5
-    assert len(amounts) == 5
+    assert len(re.findall(r"<tr>", tbody)) == 8
+    assert len(amounts) == 8
     assert all(re.fullmatch(AMOUNT, amount) for amount in amounts)
-    assert len(re.findall(r'class="profile-pill"', tbody)) == 5
+    assert len(re.findall(r'class="profile-pill"', tbody)) == 8
 
 
 def test_transactions_newest_first(client):
@@ -192,20 +191,11 @@ def test_add_expense_link(client):
     assert 'href="/expenses/add"' in _profile(client)
 
 
-def test_empty_transactions_state(client, monkeypatch):
-    import app as app_module
-
-    original = app_module._placeholder_profile_context
-
-    def empty_context(user_name):
-        context = original(user_name)
-        context["transactions"] = []
-        return context
-
-    monkeypatch.setattr(app_module, "_placeholder_profile_context", empty_context)
-    body = _profile(client)
+def test_empty_transactions_state(client, make_user):
+    body = _profile(client, make_user())
 
     assert "No expenses yet." in body
+    assert "No spending to break down yet." in body
     assert "<table" not in body
 
 
@@ -272,14 +262,18 @@ def test_profile_view_has_no_db_logic(client):
     assert sql.search(source) is None
 
 
-def test_placeholder_context_contract(client):
-    from app import _placeholder_profile_context
+def test_profile_context_contract(client):
+    from database.queries import (
+        get_category_breakdown, get_recent_transactions, get_summary_stats,
+        get_user_by_id,
+    )
 
-    context = _placeholder_profile_context("Demo User")
-    user, stats = context["user"], context["stats"]
-    transactions, categories = context["transactions"], context["categories"]
+    user = get_user_by_id(1)
+    stats = get_summary_stats(1)
+    transactions = get_recent_transactions(1)
+    categories = get_category_breakdown(1)
 
-    assert set(context) == {"user", "stats", "transactions", "categories"}
+    assert set(user) == {"name", "email", "member_since"}
     assert user["name"] == "Demo User"
     assert isinstance(user["email"], str) and isinstance(user["member_since"], str)
     assert isinstance(stats["total_spent"], float)
@@ -289,7 +283,8 @@ def test_placeholder_context_contract(client):
     amounts = [c["amount"] for c in categories]
     assert amounts == sorted(amounts, reverse=True)
     assert all(c["name"] in db_module.CATEGORIES for c in categories)
-    assert all(isinstance(c["percent"], int) and 0 <= c["percent"] <= 100 for c in categories)
+    assert all(isinstance(c["pct"], int) and 0 <= c["pct"] <= 100 for c in categories)
+    assert sum(c["pct"] for c in categories) == 100
     assert Decimal(str(stats["total_spent"])) == sum(Decimal(str(a)) for a in amounts)
     assert stats["top_category"] == categories[0]["name"]
 

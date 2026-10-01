@@ -1,3 +1,5 @@
+import itertools
+
 import pytest
 
 import database.db as db_module
@@ -23,3 +25,35 @@ def client(db_path):
 
     app.config["TESTING"] = True
     yield app.test_client()
+
+
+@pytest.fixture
+def make_user(db_path):
+    """Create a user in the temp DB and return its id."""
+    counter = itertools.count(1)
+
+    def _make(name="Test User", email=None, password="password123"):
+        email = email or f"user{next(counter)}@example.com"
+        return db_module.create_user(name, email, password)
+
+    return _make
+
+
+@pytest.fixture
+def add_expense(db_path):
+    """Insert an expense in the temp DB and return its id."""
+    def _add(user_id, amount, category="Food", date="2026-09-01",
+             description="Test expense"):
+        conn = db_module.get_db()
+        try:
+            cursor = conn.execute(
+                "INSERT INTO expenses (user_id, amount, category, date, description) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (user_id, amount, category, date, description),
+            )
+            conn.commit()
+            return cursor.lastrowid
+        finally:
+            conn.close()
+
+    return _add

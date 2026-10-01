@@ -11,7 +11,8 @@ Spendly is a lightweight personal expense tracker built with Flask and SQLite.
 spendly/
 ├── app.py              # All routes — single file, no blueprints
 ├── database/
-│   └── db.py           # SQLite helpers: get_db(), init_db(), seed_db()
+│   ├── db.py           # SQLite helpers: get_db(), init_db(), seed_db(), create_user(), authenticate_user()
+│   └── queries.py      # Read-only page query helpers (no Flask imports)
 ├── templates/
 │   ├── base.html       # Shared layout — all templates must extend this
 │   └── *.html          # One template per page
@@ -27,7 +28,7 @@ spendly/
 
 **Where things belong:**
 - New routes → `app.py` only, no blueprints
-- DB logic → `database/db.py` only, never inline in routes
+- DB logic → `database/db.py` (schema/seed/auth) or `database/queries.py` (read-only page queries), never inline in routes
 - New pages → new `.html` file extending `base.html`
 - Page-specific styles → new `.css` file, not inline `<style>` tags
 
@@ -100,7 +101,7 @@ pytest -s
 | `GET /login` | Implemented — renders `login.html`; redirects to `/` if already signed in |
 | `POST /login` | Implemented — `authenticate_user()`, sets `session["user_id"]`/`session["user_name"]`, redirects to `/`; 401 + generic error on failure |
 | `GET /logout` | Implemented — clears session, flashes "You've been signed out.", redirects to `/login` |
-| `GET /profile` | Implemented — renders `profile.html` with placeholder data; redirects to `/login` if signed out |
+| `GET /profile` | Implemented — renders `profile.html` with live data from `database/queries.py` (user, summary stats, 10 most recent transactions, category breakdown); redirects to `/login` if signed out or the session user no longer exists (clears session) |
 | `GET /expenses/add` | Stub — Step 7 |
 | `GET /expenses/<id>/edit` | Stub — Step 8 |
 | `GET /expenses/<id>/delete` | Stub — Step 9 |
@@ -113,7 +114,7 @@ pytest -s
 
 - **Never use raw string returns for stub routes** once a step is implemented — always render a template
 - **Never hardcode URLs** in templates — always use `url_for()`
-- **Never put DB logic in route functions** — it belongs in `database/db.py`
+- **Never put DB logic in route functions** — it belongs in `database/db.py` or `database/queries.py`
 - **Never install new packages** mid-feature without flagging it — keep `requirements.txt` in sync
 - **Never use JS frameworks** — the frontend is intentionally vanilla
 - **FK enforcement is manual** — SQLite foreign keys are off by default; `get_db()` must run `PRAGMA foreign_keys = ON` on every connection
