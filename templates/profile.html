@@ -112,11 +112,11 @@
                             <span class="profile-cat-name">{{ item.name }}</span>
                             <span class="profile-cat-figures">
                                 <span class="profile-cat-amount">{{ inr(item.amount) }}</span>
-                                <span class="profile-cat-percent">{{ item.percent }}%</span>
+                                <span class="profile-cat-percent">{{ item.pct }}%</span>
                             </span>
                         </div>
                         <div class="profile-bar-track" aria-hidden="true">
-                            <div class="profile-bar" style="width: {{ item.percent }}%"></div>
+                            <div class="profile-bar" style="width: {{ item.pct }}%"></div>
                         </div>
                     </li>
                     {% endfor %}
