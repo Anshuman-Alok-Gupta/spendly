@@ -1,4 +1,6 @@
+import calendar
 import os
+from datetime import date, datetime, timedelta
 
 from flask import (
     Flask, flash, redirect, render_template, request, session, url_for
@@ -39,6 +41,106 @@ def _validate_registration(name, email, password):
     if len(password) < 8:
         return "Password must be at least 8 characters."
     return None
+
+
+_DATE_FORMAT = "%Y-%m-%d"
+_BAD_DATE_ERROR = (
+    "Please use valid dates in YYYY-MM-DD format. Showing all time instead."
+)
+_RANGE_ORDER_ERROR = (
+    "The start date must be on or before the end date. "
+    "Showing all time instead."
+)
+
+
+def _parse_iso_date(value):
+    """Return a canonical 'YYYY-MM-DD' string, or None if blank.
+
+    Raises ValueError for anything strptime rejects or that isn't already
+    canonical (strptime alone accepts '2026-9-1').
+    """
+    value = (value or "").strip()
+    if not value:
+        return None
+    canonical = datetime.strptime(value, _DATE_FORMAT).date().isoformat()
+    if canonical != value:
+        raise ValueError(value)
+    return canonical
+
+
+def _parse_date_range(args):
+    """Return (start, end, error) from query args.
+
+    Bad input (malformed or reversed) yields (None, None, message).
+    """
+    try:
+        start = _parse_iso_date(args.get("start"))
+        end = _parse_iso_date(args.get("end"))
+    except ValueError:
+        return None, None, _BAD_DATE_ERROR
+    # Canonical ISO strings sort in date order, so string comparison is safe.
+    if start and end and start > end:
+        return None, None, _RANGE_ORDER_ERROR
+    return start, end, None
+
+
+def _date_presets(today):
+    """Return [{label, start, end}] quick ranges (ISO strings) for `today`."""
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    return [
+        {
+            "label": "This month",
+            "start": today.replace(day=1).isoformat(),
+            "end": today.replace(day=last_day).isoformat(),
+        },
+        {
+            "label": "Last 30 days",
+            "start": (today - timedelta(days=29)).isoformat(),
+            "end": today.isoformat(),
+        },
+        {
+            "label": "This year",
+            "start": date(today.year, 1, 1).isoformat(),
+            "end": date(today.year, 12, 31).isoformat(),
+        },
+        {"label": "All time", "start": None, "end": None},
+    ]
+
+
+def _format_day(iso_date):
+    """'2026-09-01' -> '1 Sep 2026' (no %-d: not portable to Windows)."""
+    day = date.fromisoformat(iso_date)
+    return f"{day.day} {day.strftime('%b %Y')}"
+
+
+def _period_label(start, end):
+    """Human label for an active range, or None when unfiltered."""
+    if start and end:
+        return f"Showing {_format_day(start)} – {_format_day(end)}"
+    if start:
+        return f"Since {_format_day(start)}"
+    if end:
+        return f"Up to {_format_day(end)}"
+    return None
+
+
+def _date_filter_context(start, end, error, presets):
+    """Template state for the filter bar; first exact preset match is active."""
+    active = next(
+        (
+            p["label"] for p in presets
+            if p["start"] == start and p["end"] == end
+        ),
+        None,
+    )
+    return {
+        "start": start,
+        "end": end,
+        "error": error,
+        "active": active,
+        "label": _period_label(start, end),
+        "is_active": start is not None or end is not None,
+    }
 
 
 # ------------------------------------------------------------------ #
@@ -112,12 +214,21 @@ def profile():
         session.clear()
         return redirect(url_for("login"))
 
+    start, end, error = _parse_date_range(request.args)
+    presets = _date_presets(date.today())
+
     return render_template(
         "profile.html",
         user=user,
-        stats=get_summary_stats(user_id),
-        transactions=get_recent_transactions(user_id),
-        categories=get_category_breakdown(user_id),
+        stats=get_summary_stats(user_id, start_date=start, end_date=end),
+        transactions=get_recent_transactions(
+            user_id, start_date=start, end_date=end
+        ),
+        categories=get_category_breakdown(
+            user_id, start_date=start, end_date=end
+        ),
+        presets=presets,
+        date_filter=_date_filter_context(start, end, error, presets),
     )
 
 

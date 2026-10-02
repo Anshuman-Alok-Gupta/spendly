@@ -19,7 +19,12 @@ def _format_member_since(created_at):
         return ""
 
 
-def _fetch_category_totals(conn, user_id):
+def _range_params(start_date, end_date):
+    """Bind values for the null-guarded date clause (each bound twice)."""
+    return (start_date, start_date, end_date, end_date)
+
+
+def _fetch_category_totals(conn, user_id, *, start_date=None, end_date=None):
     """Return [(category, total)] for a user, largest first, ties by name.
 
     Totals are rounded once here so every caller (stats and breakdown)
@@ -28,8 +33,9 @@ def _fetch_category_totals(conn, user_id):
     rows = conn.execute(
         "SELECT category, ROUND(SUM(amount), 2) AS total "
         "FROM expenses WHERE user_id = ? "
+        "AND (? IS NULL OR date >= ?) AND (? IS NULL OR date <= ?) "
         "GROUP BY category ORDER BY total DESC, category ASC",
-        (user_id,),
+        (user_id, *_range_params(start_date, end_date)),
     ).fetchall()
     return [(row["category"], round(float(row["total"]), 2)) for row in rows]
 
@@ -59,8 +65,12 @@ def get_user_by_id(user_id):
 
 # --- SUBAGENT A: transactions --------------------------------------- #
 
-def get_recent_transactions(user_id, limit=10):
-    """Return the user's most recent expenses, newest first."""
+def get_recent_transactions(user_id, limit=10, *, start_date=None,
+                            end_date=None):
+    """Return the user's most recent expenses, newest first.
+
+    Optional inclusive ISO `start_date` / `end_date` (None = unbounded).
+    """
     if limit <= 0:
         # SQLite treats a negative LIMIT as "no limit", so short-circuit.
         return []
@@ -69,8 +79,9 @@ def get_recent_transactions(user_id, limit=10):
         rows = conn.execute(
             "SELECT date, description, category, amount "
             "FROM expenses WHERE user_id = ? "
+            "AND (? IS NULL OR date >= ?) AND (? IS NULL OR date <= ?) "
             "ORDER BY date DESC, id DESC LIMIT ?",
-            (user_id, int(limit)),
+            (user_id, *_range_params(start_date, end_date), int(limit)),
         ).fetchall()
     finally:
         conn.close()
@@ -87,15 +98,21 @@ def get_recent_transactions(user_id, limit=10):
 
 # --- SUBAGENT B: summary stats -------------------------------------- #
 
-def get_summary_stats(user_id):
-    """Return {total_spent, transaction_count, top_category} for a user."""
+def get_summary_stats(user_id, *, start_date=None, end_date=None):
+    """Return {total_spent, transaction_count, top_category} for a user.
+
+    Optional inclusive ISO `start_date` / `end_date` (None = unbounded).
+    """
     conn = get_db()
     try:
         count = conn.execute(
-            "SELECT COUNT(*) FROM expenses WHERE user_id = ?",
-            (user_id,),
+            "SELECT COUNT(*) FROM expenses WHERE user_id = ? "
+            "AND (? IS NULL OR date >= ?) AND (? IS NULL OR date <= ?)",
+            (user_id, *_range_params(start_date, end_date)),
         ).fetchone()[0]
-        totals = _fetch_category_totals(conn, user_id)
+        totals = _fetch_category_totals(
+            conn, user_id, start_date=start_date, end_date=end_date
+        )
     finally:
         conn.close()
     return {
@@ -124,11 +141,16 @@ def _allocate_pct(amounts):
     return pcts
 
 
-def get_category_breakdown(user_id):
-    """Return [{name, amount, pct}] for a user, largest category first."""
+def get_category_breakdown(user_id, *, start_date=None, end_date=None):
+    """Return [{name, amount, pct}] for a user, largest category first.
+
+    Optional inclusive ISO `start_date` / `end_date` (None = unbounded).
+    """
     conn = get_db()
     try:
-        totals = _fetch_category_totals(conn, user_id)
+        totals = _fetch_category_totals(
+            conn, user_id, start_date=start_date, end_date=end_date
+        )
     finally:
         conn.close()
     pcts = _allocate_pct([amount for _, amount in totals])

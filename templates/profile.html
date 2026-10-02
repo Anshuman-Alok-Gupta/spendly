@@ -33,7 +33,57 @@
             </a>
         </header>
 
-        <dl class="profile-stats" aria-label="Summary">
+        <section class="profile-card profile-filter" aria-labelledby="filter-heading">
+            <h2 id="filter-heading" class="profile-filter-title">
+                <i data-lucide="calendar-range" aria-hidden="true"></i>
+                <span>Period</span>
+            </h2>
+            <ul class="profile-presets" aria-label="Quick ranges">
+                {% for preset in presets %}
+                {% set is_current = preset.label == date_filter.active %}
+                <li>
+                    <a href="{{ url_for('profile', start=preset.start, end=preset.end) }}"
+                       class="profile-preset{% if is_current %} profile-preset-active{% endif %}"
+                       {% if is_current %}aria-current="true"{% endif %}>{{ preset.label }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <form method="get" action="{{ url_for('profile') }}" class="profile-filter-form">
+                <div class="profile-filter-field">
+                    <label for="filter-start">Start date</label>
+                    <input type="date" id="filter-start" name="start"
+                           class="form-input profile-filter-input"
+                           value="{{ date_filter.start or '' }}"
+                           {% if date_filter.error %}aria-describedby="filter-error" aria-invalid="true"{% endif %}>
+                </div>
+                <div class="profile-filter-field">
+                    <label for="filter-end">End date</label>
+                    <input type="date" id="filter-end" name="end"
+                           class="form-input profile-filter-input"
+                           value="{{ date_filter.end or '' }}"
+                           {% if date_filter.error %}aria-describedby="filter-error" aria-invalid="true"{% endif %}>
+                </div>
+                <div class="profile-filter-actions">
+                    <button type="submit" class="btn-primary">Apply</button>
+                    <a href="{{ url_for('profile') }}" class="btn-ghost">Clear</a>
+                </div>
+            </form>
+            {% if date_filter.error %}
+            <p id="filter-error" class="profile-filter-error" role="alert">
+                <i data-lucide="circle-alert" aria-hidden="true"></i>
+                <span>{{ date_filter.error }}</span>
+            </p>
+            {% endif %}
+        </section>
+
+        <div class="profile-summary">
+        {% if date_filter.label %}
+        <p id="profile-period" class="profile-period">
+            <i data-lucide="calendar-range" aria-hidden="true"></i>
+            <span>{{ date_filter.label }}</span>
+        </p>
+        {% endif %}
+        <dl class="profile-stats" aria-label="Summary"{% if date_filter.label %} aria-describedby="profile-period"{% endif %}>
             <div class="profile-card profile-stat">
                 <dt class="profile-stat-label">
                     <i data-lucide="wallet" aria-hidden="true"></i>
@@ -56,6 +106,7 @@
                 <dd class="profile-stat-value">{{ stats.top_category or "—" }}</dd>
             </div>
         </dl>
+        </div>
 
         <div class="profile-grid">
 
@@ -68,7 +119,11 @@
                 <div class="profile-table-wrap" role="region" aria-labelledby="recent-heading" tabindex="0">
                     <table class="profile-table">
                         <caption class="profile-table-caption">
+                            {% if date_filter.is_active %}
+                            Showing {{ transactions|length }} most recent of {{ stats.transaction_count }} expenses in this period
+                            {% else %}
                             Showing your {{ transactions|length }} most recent of {{ stats.transaction_count }} expenses
+                            {% endif %}
                         </caption>
                         <thead>
                             <tr>
@@ -89,6 +144,14 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                </div>
+                {% elif date_filter.is_active %}
+                <div class="profile-empty">
+                    <i data-lucide="calendar-x" aria-hidden="true"></i>
+                    <p class="profile-empty-title">No expenses in this period.</p>
+                    <p class="profile-empty-body">
+                        <a href="{{ url_for('profile') }}" class="profile-empty-link">Clear the date filter</a> to see all expenses.
+                    </p>
                 </div>
                 {% else %}
                 <div class="profile-empty">
@@ -121,6 +184,8 @@
                     </li>
                     {% endfor %}
                 </ul>
+                {% elif date_filter.is_active %}
+                <p class="profile-empty-body">No spending in this period.</p>
                 {% else %}
                 <p class="profile-empty-body">No spending to break down yet.</p>
                 {% endif %}
