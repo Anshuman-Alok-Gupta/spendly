@@ -120,7 +120,8 @@ a { color: inherit; text-decoration: none; }
 }
 
 .nav-links .nav-user:hover,
-.nav-links .nav-user[aria-current="page"] { color: var(--accent); }
+.nav-links .nav-user[aria-current="page"],
+.nav-links .nav-analytics[aria-current="page"] { color: var(--accent); }
 
 /* ------------------------------------------------------------------ */
 /* Main                                                                */
@@ -718,7 +719,13 @@ body.modal-open {
 }
 
 @media (max-width: 600px) {
-    .nav-links a:not(.nav-cta):not(.nav-signout):not(.nav-user) { display: none; }
+    .navbar { padding: 0 1rem; }
+    .nav-inner { gap: 1rem; }
+    .nav-brand { flex-shrink: 0; }
+    .nav-links { gap: 1rem; min-width: 0; }
+    .nav-links a { white-space: nowrap; }
+    .nav-links .nav-user { min-width: 0; }
+    .nav-links a:not(.nav-cta):not(.nav-signout):not(.nav-user):not(.nav-analytics) { display: none; }
     .nav-links .nav-user {
         display: inline-block;
         max-width: 9rem;

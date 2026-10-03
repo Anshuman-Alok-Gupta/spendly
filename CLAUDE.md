@@ -20,7 +20,8 @@ spendly/
 │   ├── css/
 │   │   ├── style.css       # Global styles
 │   │   ├── landing.css     # Landing-page-only styles
-│   │   └── profile.css     # Profile-page-only styles
+│   │   ├── profile.css     # Profile-page-only styles
+│   │   └── analytics.css   # Analytics-page-only styles
 │   └── js/
 │       └── main.js         # Vanilla JS only
 └── requirements.txt
@@ -102,6 +103,7 @@ pytest -s
 | `POST /login` | Implemented — `authenticate_user()`, sets `session["user_id"]`/`session["user_name"]`, redirects to `/`; 401 + generic error on failure |
 | `GET /logout` | Implemented — clears session, flashes "You've been signed out.", redirects to `/login` |
 | `GET /profile` | Implemented — renders `profile.html` with live data from `database/queries.py` (user, summary stats, 10 most recent transactions, category breakdown), optionally filtered by inclusive `start`/`end` (`YYYY-MM-DD`) query params with presets (This month, Last 30 days, This year, All time); malformed or reversed dates fall back to all time with an inline error (200, no redirect); redirects to `/login` if signed out or the session user no longer exists (clears session) |
+| `GET /analytics` | Implemented — renders `analytics.html` (Coming Soon page); navbar link shown only when signed in; redirects to `/login` if signed out or the session user no longer exists (clears session) |
 | `GET /expenses/add` | Stub — Step 7 |
 | `GET /expenses/<id>/edit` | Stub — Step 8 |
 | `GET /expenses/<id>/delete` | Stub — Step 9 |
