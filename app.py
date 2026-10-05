@@ -1,12 +1,16 @@
 import calendar
 import os
 from datetime import date, datetime, timedelta
+from decimal import Decimal, InvalidOperation
 
 from flask import (
     Flask, flash, redirect, render_template, request, session, url_for
 )
 
-from database.db import authenticate_user, create_user, init_db, seed_db
+from database.db import (
+    CATEGORIES, authenticate_user, create_expense, create_user, init_db,
+    seed_db,
+)
 from database.queries import (
     get_category_breakdown, get_recent_transactions, get_summary_stats,
     get_user_by_id,
@@ -143,6 +147,69 @@ def _date_filter_context(start, end, error, presets):
     }
 
 
+_CENT = Decimal("0.01")
+_MAX_AMOUNT = Decimal("10000000")
+_MAX_DESCRIPTION = 200
+
+
+def _parse_amount(raw):
+    """Return (amount, error); amount is a 2dp float when valid."""
+    raw = (raw or "").strip()
+    if not raw:
+        return None, "Please enter an amount."
+    try:
+        amount = Decimal(raw)
+    except InvalidOperation:
+        return None, "Please enter a valid amount."
+    # Must run before any comparison: comparing sNaN raises InvalidOperation.
+    if not amount.is_finite():
+        return None, "Please enter a valid amount."
+    if amount <= 0:
+        return None, "Amount must be greater than 0."
+    if amount > _MAX_AMOUNT:
+        return None, "Amount must be ₹10,000,000 or less."
+    # Compare by value so '12.500' passes but '12.345' doesn't.
+    if amount != amount.quantize(_CENT):
+        return None, "Amount can have at most 2 decimal places."
+    return float(amount.quantize(_CENT)), None
+
+
+def _validate_expense(form, today):
+    """Return (values, error) for the add-expense form.
+
+    `values` holds amount/category/date/description ready for
+    create_expense(); only those keys are read, so a submitted user_id
+    is ignored. `today` is a date, passed in so tests are deterministic.
+    """
+    amount, error = _parse_amount(form.get("amount"))
+    if error:
+        return None, error
+
+    category = form.get("category", "")
+    if category not in CATEGORIES:
+        return None, "Please choose a valid category."
+
+    try:
+        day = _parse_iso_date(form.get("date"))
+    except ValueError:
+        day = None
+    if day is None:
+        return None, "Please enter a valid date (YYYY-MM-DD)."
+    if day > today.isoformat():
+        return None, "The date can't be in the future."
+
+    description = form.get("description", "").strip()
+    if len(description) > _MAX_DESCRIPTION:
+        return None, "Description must be 200 characters or fewer."
+
+    return {
+        "amount": amount,
+        "category": category,
+        "date": day,
+        "description": description or None,
+    }, None
+
+
 # ------------------------------------------------------------------ #
 # Routes                                                              #
 # ------------------------------------------------------------------ #
@@ -245,6 +312,35 @@ def analytics():
     return render_template("analytics.html")
 
 
+@app.route("/expenses/add", methods=["GET", "POST"])
+def add_expense():
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    if get_user_by_id(user_id) is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    today = date.today()
+    context = {"categories": CATEGORIES, "today": today.isoformat()}
+
+    if request.method == "GET":
+        return render_template(
+            "add_expense.html", form={"date": context["today"]}, **context
+        )
+
+    values, error = _validate_expense(request.form, today)
+    if error:
+        return render_template(
+            "add_expense.html", form=request.form, error=error, **context
+        ), 400
+
+    create_expense(user_id, **values)
+    flash("Expense added.", "success")
+    return redirect(url_for("profile"))
+
+
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -258,11 +354,6 @@ def privacy():
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-@app.route("/expenses/add")
-def add_expense():
-    return "Add expense — coming in Step 7"
-
 
 @app.route("/expenses/<int:id>/edit")
 def edit_expense(id):
