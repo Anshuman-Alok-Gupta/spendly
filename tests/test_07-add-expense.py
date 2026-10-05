@@ -359,15 +359,6 @@ class TestEscaping:
         assert "&lt;script&gt;" in raw
 
 
-# --------------------------------------------------------------- other stubs
-
-class TestStubsUntouched:
-    def test_delete_stub_still_returns_stub_string(self, client, user):
-        resp = client.get("/expenses/1/delete")
-        assert resp.status_code == 200
-        assert "Delete expense — coming in Step 9" in resp.get_data(as_text=True)
-
-
 # ------------------------------------------------------------ static hygiene
 
 class TestStaticHygiene:

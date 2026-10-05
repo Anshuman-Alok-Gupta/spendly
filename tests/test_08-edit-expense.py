@@ -313,9 +313,6 @@ class TestProfileEditLinks:
         assert resp.status_code == 200
         assert "Save changes" in _body(resp)
 
-    def test_profile_has_no_delete_link(self, client, expense):
-        assert "/delete" not in _body(client.get("/profile"))
-
 
 # ------------------------------------------------------------------- success
 
@@ -547,15 +544,6 @@ class TestValidation:
             amount="abc", description='"><script>alert(1)</script>'))
         assert resp.status_code == 400
         assert "<script>alert(1)</script>" not in resp.get_data(as_text=True)
-
-
-# --------------------------------------------------------------- other stubs
-
-class TestStubsUntouched:
-    def test_delete_stub_still_returns_stub_string(self, client, user):
-        resp = client.get("/expenses/1/delete")
-        assert resp.status_code == 200
-        assert "Delete expense — coming in Step 9" in resp.get_data(as_text=True)
 
 
 # ------------------------------------------------------- get_expense (queries)

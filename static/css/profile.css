@@ -142,7 +142,8 @@
 .profile-preset:focus-visible,
 .profile-filter-input:focus-visible,
 .profile-empty-link:focus-visible,
-.profile-edit:focus-visible {
+.profile-edit:focus-visible,
+.profile-delete:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
@@ -352,7 +353,8 @@
 
 .profile-table tbody .profile-actions { padding-block: 0.4rem; }
 
-.profile-edit {
+.profile-edit,
+.profile-delete {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -370,6 +372,15 @@
     border-color: var(--border-soft);
     color: var(--ink);
 }
+
+.profile-delete:hover,
+.profile-delete:focus-visible {
+    background: var(--danger-light);
+    border-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.profile-edit + .profile-delete { margin-left: 0.25rem; }
 
 .profile-visually-hidden {
     position: absolute;
