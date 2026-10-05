@@ -89,7 +89,7 @@ def test_row_shape_and_types(make_user, add_expense):
 
     (row,) = get_recent_transactions(user_id)
 
-    assert set(row) == {"date", "description", "category", "amount"}
+    assert set(row) == {"id", "date", "description", "category", "amount"}
     assert isinstance(row["amount"], float)
     assert row["amount"] == 12.0
     assert date.fromisoformat(row["date"]) == date(2026, 9, 7)

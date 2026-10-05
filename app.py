@@ -4,16 +4,16 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
 from flask import (
-    Flask, flash, redirect, render_template, request, session, url_for
+    Flask, abort, flash, redirect, render_template, request, session, url_for
 )
 
 from database.db import (
     CATEGORIES, authenticate_user, create_expense, create_user, init_db,
-    seed_db,
+    seed_db, update_expense,
 )
 from database.queries import (
-    get_category_breakdown, get_recent_transactions, get_summary_stats,
-    get_user_by_id,
+    get_category_breakdown, get_expense, get_recent_transactions,
+    get_summary_stats, get_user_by_id,
 )
 
 app = Flask(__name__)
@@ -175,11 +175,11 @@ def _parse_amount(raw):
 
 
 def _validate_expense(form, today):
-    """Return (values, error) for the add-expense form.
+    """Return (values, error) for the add- and edit-expense forms.
 
     `values` holds amount/category/date/description ready for
-    create_expense(); only those keys are read, so a submitted user_id
-    is ignored. `today` is a date, passed in so tests are deterministic.
+    create_expense() / update_expense(); only those keys are read, so a
+    submitted user_id is ignored. `today` is a date, passed in so tests are deterministic.
     """
     amount, error = _parse_amount(form.get("amount"))
     if error:
@@ -341,6 +341,50 @@ def add_expense():
     return redirect(url_for("profile"))
 
 
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
+def edit_expense(id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    if get_user_by_id(user_id) is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    # Missing and not-yours look identical, and both are checked before
+    # validation so a bad POST can't reveal that someone else's id exists.
+    expense = get_expense(id, user_id)
+    if expense is None:
+        abort(404)
+
+    today = date.today()
+    context = {
+        "categories": CATEGORIES,
+        "today": today.isoformat(),
+        "expense_id": id,
+    }
+
+    if request.method == "GET":
+        form = {
+            "amount": "%.2f" % expense["amount"],
+            "category": expense["category"],
+            "date": expense["date"],
+            "description": expense["description"] or "",
+        }
+        return render_template("edit_expense.html", form=form, **context)
+
+    values, error = _validate_expense(request.form, today)
+    if error:
+        return render_template(
+            "edit_expense.html", form=request.form, error=error, **context
+        ), 400
+
+    if not update_expense(id, user_id, **values):
+        abort(404)
+    flash("Expense updated.", "success")
+    return redirect(url_for("profile"))
+
+
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -354,11 +398,6 @@ def privacy():
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
-
-@app.route("/expenses/<int:id>/edit")
-def edit_expense(id):
-    return "Edit expense — coming in Step 8"
-
 
 @app.route("/expenses/<int:id>/delete")
 def delete_expense(id):

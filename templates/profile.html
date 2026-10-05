@@ -140,6 +140,7 @@
                                 <th scope="col">Description</th>
                                 <th scope="col">Category</th>
                                 <th scope="col" class="profile-num">Amount</th>
+                                <th scope="col" class="profile-actions"><span class="profile-visually-hidden">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -149,6 +150,12 @@
                                 <th scope="row" class="profile-desc">{{ tx.description }}</th>
                                 <td><span class="profile-pill">{{ tx.category }}</span></td>
                                 <td class="profile-num">{{ inr(tx.amount) }}</td>
+                                <td class="profile-actions">
+                                    <a href="{{ url_for('edit_expense', id=tx.id) }}" class="profile-edit"
+                                       aria-label="Edit {{ tx.description if tx.description != '—' else tx.category ~ ' expense' }} on {{ tx.date }}">
+                                        <i data-lucide="pencil" aria-hidden="true"></i>
+                                    </a>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>

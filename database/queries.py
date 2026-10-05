@@ -63,6 +63,36 @@ def get_user_by_id(user_id):
     }
 
 
+# ------------------------------------------------------------------ #
+# Single expense                                                      #
+# ------------------------------------------------------------------ #
+
+def get_expense(expense_id, user_id):
+    """Return {id, amount, category, date, description} for one expense.
+
+    Returns None if it doesn't exist or belongs to another user.
+    `description` is the raw value and may be None.
+    """
+    conn = get_db()
+    try:
+        row = conn.execute(
+            "SELECT id, amount, category, date, description "
+            "FROM expenses WHERE id = ? AND user_id = ?",
+            (expense_id, user_id),
+        ).fetchone()
+    finally:
+        conn.close()
+    if row is None:
+        return None
+    return {
+        "id": row["id"],
+        "amount": round(float(row["amount"]), 2),
+        "category": row["category"],
+        "date": row["date"],
+        "description": row["description"],
+    }
+
+
 # --- SUBAGENT A: transactions --------------------------------------- #
 
 def get_recent_transactions(user_id, limit=10, *, start_date=None,
@@ -77,7 +107,7 @@ def get_recent_transactions(user_id, limit=10, *, start_date=None,
     conn = get_db()
     try:
         rows = conn.execute(
-            "SELECT date, description, category, amount "
+            "SELECT id, date, description, category, amount "
             "FROM expenses WHERE user_id = ? "
             "AND (? IS NULL OR date >= ?) AND (? IS NULL OR date <= ?) "
             "ORDER BY date DESC, id DESC LIMIT ?",
@@ -87,6 +117,7 @@ def get_recent_transactions(user_id, limit=10, *, start_date=None,
         conn.close()
     return [
         {
+            "id": row["id"],
             "date": row["date"],
             "description": row["description"] or NO_VALUE,
             "category": row["category"],
