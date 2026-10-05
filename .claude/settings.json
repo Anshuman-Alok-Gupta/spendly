@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m py_compile *)",
+      "Bash(python -m pytest)",
+      "Bash(python -m pytest *)",
+      "Bash(pytest)",
+      "Bash(pytest *)",
+      "Bash(nvidia-smi)",
+      "Bash(nvidia-smi *)",
+      "mcp__sqlite__list_tables",
+      "mcp__sqlite__describe_table",
+      "mcp__sqlite__read_query",
+      "mcp__sqlite__list_insights",
+      "mcp__plugin_figma_figma__whoami",
+      "mcp__plugin_figma_figma__get_design_context",
+      "mcp__plugin_figma_figma__get_screenshot",
+      "mcp__plugin_figma_figma__get_metadata"
+    ]
+  }
+}
