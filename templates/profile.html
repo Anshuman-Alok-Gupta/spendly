@@ -14,6 +14,15 @@
 <section class="profile">
     <div class="profile-inner">
 
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+            <p class="profile-flash" role="status">
+                <i data-lucide="circle-check" aria-hidden="true"></i>
+                <span>{{ message }}</span>
+            </p>
+            {% endfor %}
+        {% endwith %}
+
         <header class="profile-card profile-user">
             <div class="profile-avatar" aria-hidden="true">{{ initials }}</div>
             <div class="profile-user-info">
