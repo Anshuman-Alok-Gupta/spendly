@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Delete expense — Spendly{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/expense.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<section class="auth-section expense">
+    <div class="auth-container">
+
+        <div class="auth-header">
+            <h1 class="auth-title">Delete expense</h1>
+            <p class="auth-subtitle">This can't be undone.</p>
+        </div>
+
+        <div class="auth-card">
+            <dl class="expense-summary">
+                <div class="expense-summary-row">
+                    <dt>Date</dt>
+                    <dd><time datetime="{{ expense.date }}">{{ expense.date }}</time></dd>
+                </div>
+                <div class="expense-summary-row">
+                    <dt>Description</dt>
+                    <dd>{{ expense.description or "—" }}</dd>
+                </div>
+                <div class="expense-summary-row">
+                    <dt>Category</dt>
+                    <dd>{{ expense.category }}</dd>
+                </div>
+                <div class="expense-summary-row">
+                    <dt>Amount</dt>
+                    <dd class="expense-summary-amount">₹{{ "%.2f"|format(expense.amount) }}</dd>
+                </div>
+            </dl>
+
+            <form method="post" action="{{ url_for('delete_expense', id=expense.id) }}">
+                <div class="expense-actions">
+                    <a href="{{ url_for('profile') }}" class="btn-ghost">Cancel</a>
+                    <button type="submit" class="btn-primary expense-delete">
+                        <i data-lucide="trash-2" aria-hidden="true"></i>
+                        <span>Delete expense</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</section>
+
+{% endblock %}

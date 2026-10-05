@@ -8,8 +8,8 @@ from flask import (
 )
 
 from database.db import (
-    CATEGORIES, authenticate_user, create_expense, create_user, init_db,
-    seed_db, update_expense,
+    CATEGORIES, authenticate_user, create_expense, create_user,
+    delete_expense as db_delete_expense, init_db, seed_db, update_expense,
 )
 from database.queries import (
     get_category_breakdown, get_expense, get_recent_transactions,
@@ -385,6 +385,31 @@ def edit_expense(id):
     return redirect(url_for("profile"))
 
 
+@app.route("/expenses/<int:id>/delete", methods=["GET", "POST"])
+def delete_expense(id):
+    user_id = session.get("user_id")
+    if not user_id:
+        return redirect(url_for("login"))
+
+    if get_user_by_id(user_id) is None:
+        session.clear()
+        return redirect(url_for("login"))
+
+    # Missing and not-yours look identical, and both are checked before
+    # anything is deleted. GET only confirms; only POST deletes.
+    expense = get_expense(id, user_id)
+    if expense is None:
+        abort(404)
+
+    if request.method == "GET":
+        return render_template("delete_expense.html", expense=expense)
+
+    if not db_delete_expense(id, user_id):
+        abort(404)  # removed elsewhere between the lookup and the delete
+    flash("Expense deleted.", "success")
+    return redirect(url_for("profile"))
+
+
 @app.route("/terms")
 def terms():
     return render_template("terms.html")
@@ -393,15 +418,6 @@ def terms():
 @app.route("/privacy")
 def privacy():
     return render_template("privacy.html")
-
-
-# ------------------------------------------------------------------ #
-# Placeholder routes — students will implement these                  #
-# ------------------------------------------------------------------ #
-
-@app.route("/expenses/<int:id>/delete")
-def delete_expense(id):
-    return "Delete expense — coming in Step 9"
 
 
 if __name__ == "__main__":
