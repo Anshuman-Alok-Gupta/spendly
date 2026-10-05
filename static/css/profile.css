@@ -141,7 +141,8 @@
 
 .profile-preset:focus-visible,
 .profile-filter-input:focus-visible,
-.profile-empty-link:focus-visible {
+.profile-empty-link:focus-visible,
+.profile-edit:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
@@ -300,7 +301,7 @@
 
 .profile-table {
     width: 100%;
-    min-width: 34rem;
+    min-width: 36rem;
     border-collapse: collapse;
     font-size: 0.9rem;
 }
@@ -342,6 +343,45 @@
 }
 
 .profile-table tbody .profile-num { font-weight: 500; }
+
+.profile-table .profile-actions {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.profile-table tbody .profile-actions { padding-block: 0.4rem; }
+
+.profile-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    color: var(--ink-muted);
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.profile-edit:hover {
+    background: var(--paper-warm);
+    border-color: var(--border-soft);
+    color: var(--ink);
+}
+
+.profile-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
 
 .profile-date {
     color: var(--ink-muted);

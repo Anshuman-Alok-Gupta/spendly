@@ -142,6 +142,24 @@ def create_expense(user_id, amount, category, date, description):
         conn.close()
 
 
+def update_expense(expense_id, user_id, amount, category, date, description):
+    """Update an expense owned by `user_id`; return True if a row matched.
+
+    Values are expected to be validated by the caller; `description` may be None.
+    """
+    conn = get_db()
+    try:
+        cursor = conn.execute(
+            "UPDATE expenses SET amount = ?, category = ?, date = ?, "
+            "description = ? WHERE id = ? AND user_id = ?",
+            (amount, category, date, description, expense_id, user_id),
+        )
+        conn.commit()
+        return cursor.rowcount == 1
+    finally:
+        conn.close()
+
+
 def authenticate_user(email, password):
     """Return the user row if the email and password match, otherwise None.
 

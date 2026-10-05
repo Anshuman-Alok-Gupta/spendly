@@ -11,7 +11,7 @@ Spendly is a lightweight personal expense tracker built with Flask and SQLite.
 spendly/
 ├── app.py              # All routes — single file, no blueprints
 ├── database/
-│   ├── db.py           # SQLite helpers: get_db(), init_db(), seed_db(), create_user(), authenticate_user(), create_expense()
+│   ├── db.py           # SQLite helpers: get_db(), init_db(), seed_db(), create_user(), authenticate_user(), create_expense(), update_expense()
 │   └── queries.py      # Read-only page query helpers (no Flask imports)
 ├── templates/
 │   ├── base.html       # Shared layout — all templates must extend this
@@ -107,7 +107,8 @@ pytest -s
 | `GET /analytics` | Implemented — renders `analytics.html` (Coming Soon page); navbar link shown only when signed in; redirects to `/login` if signed out or the session user no longer exists (clears session) |
 | `GET /expenses/add` | Implemented — renders `add_expense.html` (date defaults to today); redirects to `/login` if signed out or the session user no longer exists (clears session) |
 | `POST /expenses/add` | Implemented — `_validate_expense()` then `create_expense()` for the session user, flashes "Expense added.", redirects to `/profile`; 400 + re-filled form with inline error on invalid input |
-| `GET /expenses/<id>/edit` | Stub — Step 8 |
+| `GET /expenses/<id>/edit` | Implemented — renders `edit_expense.html` pre-filled from `get_expense(id, user_id)` (amount to 2dp, NULL description blank); 404 if the expense is missing or belongs to another user; redirects to `/login` if signed out or the session user no longer exists (clears session) |
+| `POST /expenses/<id>/edit` | Implemented — same auth and 404-if-not-owned checks (nothing written), then `_validate_expense()` and `update_expense()`, flashes "Expense updated.", redirects to `/profile`; 400 + form re-filled with submitted values and inline error on invalid input |
 | `GET /expenses/<id>/delete` | Stub — Step 9 |
 
 **Do not implement a stub route unless the active task explicitly targets that step.**

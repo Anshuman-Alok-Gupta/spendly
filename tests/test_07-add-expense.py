@@ -362,11 +362,6 @@ class TestEscaping:
 # --------------------------------------------------------------- other stubs
 
 class TestStubsUntouched:
-    def test_edit_stub_still_returns_stub_string(self, client, user):
-        resp = client.get("/expenses/1/edit")
-        assert resp.status_code == 200
-        assert "Edit expense — coming in Step 8" in resp.get_data(as_text=True)
-
     def test_delete_stub_still_returns_stub_string(self, client, user):
         resp = client.get("/expenses/1/delete")
         assert resp.status_code == 200
